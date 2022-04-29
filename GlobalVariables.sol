@@ -8,4 +8,4 @@ contract GlobalVariables {
         uint blockNum =  block.number;
         return (sender, timestamp, blockNum);
     }
-}
+}  
