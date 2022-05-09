@@ -8,8 +8,7 @@ contract Payable {
         owner = payable(msg.sender);
     }
 
-    function deposit() external payable {
-    }
+    function deposit() external payable {}
 
     function getBalance() external view returns (uint) {
         return address(this).balance;
