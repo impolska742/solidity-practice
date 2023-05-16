@@ -19,7 +19,7 @@ contract Ownable {
         _;
     }
 
-    function setOwner(address _newOwner) external onlyOwner  {
+    function setOwner(address _newOwner) external onlyOwner {
         require(_newOwner != address(0), "Invalid address");
         owner = _newOwner;
     }
