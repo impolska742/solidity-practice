@@ -26,7 +26,7 @@ contract MultiSig {
     Transaction[] public transactions;
     mapping(address => bool) public isOwner;
     uint private totalConfirmationsRequired;
-    mapping(uint => mapping(address => bool)) isApproved;
+    mapping(uint => mapping(address => bool)) private isApproved;
 
     constructor(address[] memory _owners, uint _totalConfirmationsRequired) {
         require(_owners.length > 0, "Owners are required");
@@ -78,6 +78,21 @@ contract MultiSig {
         _;
     }
 
+    modifier isAlreadyApproved(uint _txIndex) {
+        require(isApproved[_txIndex][msg.sender],
+            "Transaction is not approved"
+        );
+        _;
+    }
+
+    modifier canExecute(uint _txIndex) {
+        require(
+            transactions[_txIndex].totalConfirmations >= totalConfirmationsRequired,
+            "Transaction not approved by enough owners"
+        );
+        _;
+    }
+
     function getTotalConfirmationsRequired()
         external
         view
@@ -100,7 +115,7 @@ contract MultiSig {
                 value: _value,
                 data: _data,
                 executed: false,
-                totalConfirmations: 0
+                totalConfirmations: 1
             })
         );
 
@@ -118,13 +133,55 @@ contract MultiSig {
         notExecuted(_txIndex)
         notApproved(_txIndex)
     {
-        // Transaction memory tx = transactions[_txIndex];
+        Transaction storage transaction = transactions[_txIndex];
         isApproved[_txIndex][msg.sender] = true;
+        transaction.totalConfirmations += 1;
+
+        emit Approve(msg.sender, _txIndex);
     }
 
-    function reject() external {}
+    function reject(uint _txIndex) 
+        public
+        onlyOwner
+        txExists(_txIndex) 
+        notExecuted(_txIndex)
+    {
+        Transaction storage transaction = transactions[_txIndex];
+        isApproved[_txIndex][msg.sender] = false;
+        transaction.totalConfirmations -= 1;
 
-    function execute() external {}
+        emit Reject(msg.sender, _txIndex);
+    }
 
-    receive() external payable {}
+    function execute(uint _txIndex) 
+        public 
+        payable
+        onlyOwner
+        txExists(_txIndex) 
+        canExecute(_txIndex)
+        notExecuted(_txIndex)
+    {
+        Transaction storage transaction = transactions[_txIndex];
+        transaction.executed = true;
+        (bool success, ) = address(payable(transaction.to)).call{value : transaction.value, gas: 10000}(transaction.data);
+        
+        require(success, "transaction failed");
+
+        emit Execute(msg.sender, _txIndex);
+    }
+
+    function getBalance() external view returns (uint) {
+        return address(this).balance;
+    }
+
+    receive() external payable {
+        // emit Deposit(msg.sender, msg.value, address(this).balance);
+    }
 }
+
+// 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2 -> owner1
+// 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4 -> owner2
+
+// Contract Address -> 0x7EF2e0048f5bAeDe046f6BF797943daF4ED8CB47
+// ["0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", "0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2"], 2 -> deploy
+// "0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db", 1000000000000000000, 0x00 -> submit
