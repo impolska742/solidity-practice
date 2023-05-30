@@ -1,5 +1,4 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { utils } from "ethers";
@@ -16,7 +15,8 @@ describe("Multisig", function () {
     const confirmationsRequired = 2;
 
     // List of owners of multi sig wallet
-    const [owner1, owner2, owner3, notOwner] = await ethers.getSigners();
+    const [owner1, owner2, owner3, notOwner1, notOwner2] =
+      await ethers.getSigners();
 
     const MultiSig = await ethers.getContractFactory("MultiSig");
     const multiSig = await MultiSig.deploy(
@@ -25,22 +25,14 @@ describe("Multisig", function () {
       { value: amount }
     );
 
-    console.log({
-      multiSig,
-      confirmationsRequired,
-      owner1,
-      owner2,
-      owner3,
-      notOwner,
-    });
-
     return {
       multiSig,
       confirmationsRequired,
       owner1,
       owner2,
       owner3,
-      notOwner,
+      notOwner1,
+      notOwner2,
     };
   }
 
@@ -57,8 +49,32 @@ describe("Multisig", function () {
       });
 
       it("Should revert by calling getTotalConfirmationsRequired", async function () {
-        const { multiSig, notOwner } = await loadFixture(deployMultiSigWallet);
+        const { multiSig, notOwner1 } = await loadFixture(deployMultiSigWallet);
+
+        await expect(
+          multiSig.connect(notOwner1).getTotalConfirmationsRequired()
+        ).to.be.revertedWith("Not Owner!");
       });
     });
+
+    // // Write test case for submit transaction function with respect to "MutliSig.sol" Contract in this directory
+    // it("Should submit transaction", async function () {
+    //   const { multiSig, owner1, notOwner1 } = await loadFixture(
+    //     deployMultiSigWallet
+    //   );
+
+    //   const _to = notOwner1.address;
+    //   const _value = utils.parseEther("0.5").toString();
+    //   const _data = "0x00";
+
+    //   await multiSig.connect(owner1).submit(_to, _value, _data);
+
+    // });
+
+    // Write test case for confirm transaction function with respect to "MutliSig.sol" Contract in this directory
+
+    // Write test case for revoke confirmation function with respect to "MutliSig.sol" Contract in this directory
+
+    // Write test case for execute transaction function with respect to "MutliSig.sol" Contract in this directory
   });
 });

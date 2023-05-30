@@ -22,6 +22,8 @@ contract MultiSig {
         uint totalConfirmations;
     }
 
+    // uint public totalOwners;
+    // uint public totalTransactions;
     address[] public owners;
     Transaction[] public transactions;
     mapping(address => bool) public isOwner;
