@@ -34,6 +34,7 @@ export interface MultiSigInterface extends utils.Interface {
     "execute(uint256)": FunctionFragment;
     "getBalance()": FunctionFragment;
     "getTotalConfirmationsRequired()": FunctionFragment;
+    "getTotalTransactions()": FunctionFragment;
     "isOwner(address)": FunctionFragment;
     "owners(uint256)": FunctionFragment;
     "reject(uint256)": FunctionFragment;
@@ -47,6 +48,7 @@ export interface MultiSigInterface extends utils.Interface {
       | "execute"
       | "getBalance"
       | "getTotalConfirmationsRequired"
+      | "getTotalTransactions"
       | "isOwner"
       | "owners"
       | "reject"
@@ -68,6 +70,10 @@ export interface MultiSigInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getTotalConfirmationsRequired",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTotalTransactions",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -100,6 +106,10 @@ export interface MultiSigInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "getBalance", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getTotalConfirmationsRequired",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getTotalTransactions",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "isOwner", data: BytesLike): Result;
@@ -219,6 +229,8 @@ export interface MultiSig extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getTotalTransactions(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     isOwner(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -268,6 +280,8 @@ export interface MultiSig extends BaseContract {
   getBalance(overrides?: CallOverrides): Promise<BigNumber>;
 
   getTotalConfirmationsRequired(overrides?: CallOverrides): Promise<BigNumber>;
+
+  getTotalTransactions(overrides?: CallOverrides): Promise<BigNumber>;
 
   isOwner(
     arg0: PromiseOrValue<string>,
@@ -320,6 +334,8 @@ export interface MultiSig extends BaseContract {
     getTotalConfirmationsRequired(
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getTotalTransactions(overrides?: CallOverrides): Promise<BigNumber>;
 
     isOwner(
       arg0: PromiseOrValue<string>,
@@ -429,6 +445,8 @@ export interface MultiSig extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getTotalTransactions(overrides?: CallOverrides): Promise<BigNumber>;
+
     isOwner(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -471,6 +489,10 @@ export interface MultiSig extends BaseContract {
     getBalance(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getTotalConfirmationsRequired(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getTotalTransactions(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

@@ -37,8 +37,8 @@
       ]
     },
     "/Users/vaibhavbhardwaj/practice/solidity-practice/app/Multisig/contracts/MultiSig.sol": {
-      "lastModificationDate": 1685192713683,
-      "contentHash": "0f355a9ce1459eee8466f2e4f4f83d09",
+      "lastModificationDate": 1685619688046,
+      "contentHash": "b62025fe2e5af97c3b7d140835d74377",
       "sourceName": "contracts/MultiSig.sol",
       "solcConfig": {
         "version": "0.8.18",

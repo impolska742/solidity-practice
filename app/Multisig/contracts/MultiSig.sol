@@ -104,6 +104,10 @@ contract MultiSig {
         return totalConfirmationsRequired;
     }
 
+    function getTotalTransactions() external view returns (uint) {
+        return transactions.length;
+    }
+
     function submit(
         address _to,
         uint _value,
