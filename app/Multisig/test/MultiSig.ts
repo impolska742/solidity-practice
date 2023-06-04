@@ -100,6 +100,22 @@ describe("Multisig", function () {
         await submitTxn.wait();
         await expect(multiSig.connect(deployer).approve(0)).to.revertedWith("Transaction already approved");
       });
+
+      it("Should revert - Transaction has been executed", async function () {
+        const { multiSig, owner1:deployer, owner2:nonDeployer, notOwner1 } = await loadFixture(deployMultiSigWallet);
+        const _to = notOwner1.address;
+        const _value = utils.parseEther("0.5"); 
+        const _data = "0x00";
+        const submitTxn = await multiSig.connect(deployer).submit(_to, _value, _data);
+        await submitTxn.wait();
+        const prev = (await multiSig.transactions(0)).totalConfirmations.toNumber()
+        const approveTxn = await multiSig.connect(nonDeployer).approve(0);
+        await approveTxn.wait();
+        expect((await multiSig.transactions(0)).totalConfirmations.toNumber()).to.equal(prev + 1);
+        const executeTxn = await multiSig.connect(deployer).execute(0)
+        await executeTxn.wait()
+        await expect(multiSig.connect(deployer).approve(0)).to.revertedWith("Transaction has been executed");
+      });
     });
 
     describe("Reject Transaction", () => {
@@ -148,6 +164,22 @@ describe("Multisig", function () {
         const submitTxn = await multiSig.connect(deployer).submit(_to, _value, _data);
         await submitTxn.wait();
         await expect(multiSig.connect(nonDeployer).reject(1)).to.revertedWith("Transaction does not exist");
+      });
+
+      it("Should revert - Transaction has been executed", async function () {
+        const { multiSig, owner1:deployer, owner2:nonDeployer, notOwner1 } = await loadFixture(deployMultiSigWallet);
+        const _to = notOwner1.address;
+        const _value = utils.parseEther("0.5"); 
+        const _data = "0x00";
+        const submitTxn = await multiSig.connect(deployer).submit(_to, _value, _data);
+        await submitTxn.wait();
+        const prev = (await multiSig.transactions(0)).totalConfirmations.toNumber()
+        const approveTxn = await multiSig.connect(nonDeployer).approve(0);
+        await approveTxn.wait();
+        expect((await multiSig.transactions(0)).totalConfirmations.toNumber()).to.equal(prev + 1);
+        const executeTxn = await multiSig.connect(deployer).execute(0)
+        await executeTxn.wait()
+        await expect(multiSig.connect(deployer).reject(0)).to.revertedWith("Transaction has been executed");
       });
     })
 
