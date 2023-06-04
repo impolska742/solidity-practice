@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/vaibhavbhardwaj/practice/solidity-practice/app/Multisig/contracts/MultiSig.sol": {
-      "lastModificationDate": 1685619688046,
-      "contentHash": "b62025fe2e5af97c3b7d140835d74377",
+      "lastModificationDate": 1685818873052,
+      "contentHash": "4040aef404960240b7b2adf501bb7f8c",
       "sourceName": "contracts/MultiSig.sol",
       "solcConfig": {
         "version": "0.8.18",

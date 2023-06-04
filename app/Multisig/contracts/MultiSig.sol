@@ -80,13 +80,6 @@ contract MultiSig {
         _;
     }
 
-    modifier isAlreadyApproved(uint _txIndex) {
-        require(isApproved[_txIndex][msg.sender],
-            "Transaction is not approved"
-        );
-        _;
-    }
-
     modifier canExecute(uint _txIndex) {
         require(
             transactions[_txIndex].totalConfirmations >= totalConfirmationsRequired,
@@ -154,7 +147,10 @@ contract MultiSig {
     {
         Transaction storage transaction = transactions[_txIndex];
         isApproved[_txIndex][msg.sender] = false;
-        transaction.totalConfirmations -= 1;
+
+        if(transaction.totalConfirmations != 0) {
+            transaction.totalConfirmations -= 1;
+        }
 
         emit Reject(msg.sender, _txIndex);
     }
@@ -181,7 +177,7 @@ contract MultiSig {
     }
 
     receive() external payable {
-        // emit Deposit(msg.sender, msg.value, address(this).balance);
+        emit Deposit(msg.sender, msg.value, address(this).balance);
     }
 }
 

@@ -36,7 +36,6 @@ describe("Multisig", function () {
       });
     });
 
-    // Write test case for submit transaction function with respect to "MutliSig.sol" Contract in this directory
     describe("Submit Transaction", () => {
       it("Should submit transaction and increase transaction count", async function () {
         const { multiSig, owner1, notOwner1 } = await loadFixture(deployMultiSigWallet);
@@ -102,5 +101,130 @@ describe("Multisig", function () {
         await expect(multiSig.connect(deployer).approve(0)).to.revertedWith("Transaction already approved");
       });
     });
+
+    describe("Reject Transaction", () => {
+      it("Should reject transaction", async function () {
+        const { multiSig, owner1:deployer, owner2:nonDeployer } = await loadFixture(deployMultiSigWallet);
+        const _to = nonDeployer.address;
+        const _value = utils.parseEther("0.5").toString();
+        const _data = "0x00";
+        const submitTxn = await multiSig.connect(deployer).submit(_to, _value, _data);
+        await submitTxn.wait();
+        const prev = (await multiSig.transactions(0)).totalConfirmations.toNumber()
+        const rejectTxn1 = await multiSig.connect(deployer).reject(0);
+        await rejectTxn1.wait();
+        expect((await multiSig.transactions(0)).totalConfirmations.toNumber()).to.equal(prev - 1);
+      });
+
+      it("Should reject twice", async function () {
+        const { multiSig, owner1:deployer, owner2:nonDeployer } = await loadFixture(deployMultiSigWallet);
+        const _to = nonDeployer.address;
+        const _value = utils.parseEther("0.5").toString();
+        const _data = "0x00";
+        const submitTxn = await multiSig.connect(deployer).submit(_to, _value, _data);
+        await submitTxn.wait();
+        const rejectTxn1 = await multiSig.connect(deployer).reject(0);
+        await rejectTxn1.wait();
+        const rejectTxn2 = await multiSig.connect(nonDeployer).reject(0);
+        await rejectTxn2.wait();
+        expect((await multiSig.transactions(0)).totalConfirmations.toNumber()).to.equal(0);
+      });
+
+      it("Should revert - Not Owner", async function () {
+        const { multiSig, owner1:deployer, notOwner1 } = await loadFixture(deployMultiSigWallet);
+        const _to = notOwner1.address;
+        const _value = utils.parseEther("0.5").toString();
+        const _data = "0x00";
+        const submitTxn = await multiSig.connect(deployer).submit(_to, _value, _data);
+        await submitTxn.wait();
+        await expect(multiSig.connect(notOwner1).reject(0)).to.revertedWith("Not Owner!");
+      });
+
+      it("Should revert - Txn does not exist", async function () {
+        const { multiSig, owner1:deployer, owner2:nonDeployer } = await loadFixture(deployMultiSigWallet);
+        const _to = nonDeployer.address;
+        const _value = utils.parseEther("0.5").toString();
+        const _data = "0x00";
+        const submitTxn = await multiSig.connect(deployer).submit(_to, _value, _data);
+        await submitTxn.wait();
+        await expect(multiSig.connect(nonDeployer).reject(1)).to.revertedWith("Transaction does not exist");
+      });
+    })
+
+    describe("Execute Transaction", () => {
+      it("Should execute transaction", async function () {
+        const { multiSig, owner1:deployer, owner2:nonDeployer, notOwner1, confirmationsRequired } = await loadFixture(deployMultiSigWallet);
+        const _to = notOwner1.address;
+        const _value = utils.parseEther("0.5"); 
+        const _data = "0x00";
+        const submitTxn = await multiSig.connect(deployer).submit(_to, _value, _data);
+        await submitTxn.wait();
+        const prev = (await multiSig.transactions(0)).totalConfirmations.toNumber()
+        const approveTxn = await multiSig.connect(nonDeployer).approve(0);
+        await approveTxn.wait();
+        expect((await multiSig.transactions(0)).totalConfirmations.toNumber()).to.equal(prev + 1);
+        expect((await multiSig.transactions(0)).totalConfirmations.toNumber()).to.greaterThanOrEqual(confirmationsRequired);
+        const prevUserBalance = await notOwner1.getBalance()
+        const prevContractBalance = await multiSig.getBalance()
+        const executeTxn = await multiSig.connect(deployer).execute(0);
+        await executeTxn.wait();
+        expect(await notOwner1.getBalance()).to.equal(prevUserBalance.add(_value))
+        expect(await multiSig.getBalance()).to.equal(prevContractBalance.sub(_value))
+      });
+
+      it("Should revert - Not Owner", async function () {
+        const { multiSig, owner1:deployer, owner2:nonDeployer, notOwner1 } = await loadFixture(deployMultiSigWallet);
+        const _to = notOwner1.address;
+        const _value = utils.parseEther("0.5"); 
+        const _data = "0x00";
+        const submitTxn = await multiSig.connect(deployer).submit(_to, _value, _data);
+        await submitTxn.wait();
+        const prev = (await multiSig.transactions(0)).totalConfirmations.toNumber()
+        const approveTxn = await multiSig.connect(nonDeployer).approve(0);
+        await approveTxn.wait();
+        expect((await multiSig.transactions(0)).totalConfirmations.toNumber()).to.equal(prev + 1);
+        await expect(multiSig.connect(notOwner1).execute(0)).to.revertedWith("Not Owner!");
+      });
+
+      it("Should revert - Txn does not exist", async function () {
+        const { multiSig, owner1:deployer, owner2:nonDeployer, notOwner1 } = await loadFixture(deployMultiSigWallet);
+        const _to = notOwner1.address;
+        const _value = utils.parseEther("0.5"); 
+        const _data = "0x00";
+        const submitTxn = await multiSig.connect(deployer).submit(_to, _value, _data);
+        await submitTxn.wait();
+        const prev = (await multiSig.transactions(0)).totalConfirmations.toNumber()
+        const approveTxn = await multiSig.connect(nonDeployer).approve(0);
+        await approveTxn.wait();
+        expect((await multiSig.transactions(0)).totalConfirmations.toNumber()).to.equal(prev + 1);
+        await expect(multiSig.connect(deployer).execute(1)).to.revertedWith("Transaction does not exist");
+      });
+
+      it("Should revert - Txn not approved by enough owner", async function () {
+        const { multiSig, owner1:deployer, owner2:nonDeployer, notOwner1 } = await loadFixture(deployMultiSigWallet);
+        const _to = notOwner1.address;
+        const _value = utils.parseEther("0.5"); 
+        const _data = "0x00";
+        const submitTxn = await multiSig.connect(deployer).submit(_to, _value, _data);
+        await submitTxn.wait();
+        await expect(multiSig.connect(deployer).execute(0)).to.revertedWith("Transaction not approved by enough owners");
+      });
+
+      it("Should revert - Transaction has been executed", async function () {
+        const { multiSig, owner1:deployer, owner2:nonDeployer, notOwner1 } = await loadFixture(deployMultiSigWallet);
+        const _to = notOwner1.address;
+        const _value = utils.parseEther("0.5"); 
+        const _data = "0x00";
+        const submitTxn = await multiSig.connect(deployer).submit(_to, _value, _data);
+        await submitTxn.wait();
+        const prev = (await multiSig.transactions(0)).totalConfirmations.toNumber()
+        const approveTxn = await multiSig.connect(nonDeployer).approve(0);
+        await approveTxn.wait();
+        expect((await multiSig.transactions(0)).totalConfirmations.toNumber()).to.equal(prev + 1);
+        const executeTxn = await multiSig.connect(deployer).execute(0)
+        await executeTxn.wait()
+        await expect(multiSig.connect(deployer).execute(0)).to.revertedWith("Transaction has been executed");
+      });
+    })
   });
 });
