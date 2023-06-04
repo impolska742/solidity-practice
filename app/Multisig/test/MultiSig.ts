@@ -1,6 +1,6 @@
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import hre, { ethers, network} from "hardhat";
 import { utils } from "ethers";
 
 describe("Multisig", function () {
@@ -39,12 +39,11 @@ describe("Multisig", function () {
     describe("Submit Transaction", () => {
       it("Should submit transaction and increase transaction count", async function () {
         const { multiSig, owner1, notOwner1 } = await loadFixture(deployMultiSigWallet);
-        const _to = notOwner1.address;
+        const prev = (await multiSig.connect(owner1).getTotalTransactions()).toNumber();
         const _value = utils.parseEther("0.5").toString();
         const _data = "0x00";
-        const prev = (await multiSig.connect(owner1).getTotalTransactions()).toNumber();
-        const submitTxn = await multiSig.connect(owner1).submit(_to, _value, _data);
-        await submitTxn.wait()
+        const submitTxn = await multiSig.connect(owner1).submit(notOwner1.address, _value, _data);
+        await submitTxn.wait();
         const next = (await multiSig.connect(owner1).getTotalTransactions()).toNumber();
         expect(next).to.equal(prev + 1);
       });
