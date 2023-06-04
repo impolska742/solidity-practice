@@ -43,7 +43,8 @@ describe("Multisig", function () {
         const _value = utils.parseEther("0.5").toString();
         const _data = "0x00";
         const prev = (await multiSig.connect(owner1).getTotalTransactions()).toNumber();
-        await multiSig.connect(owner1).submit(_to, _value, _data);
+        const submitTxn = await multiSig.connect(owner1).submit(_to, _value, _data);
+        await submitTxn.wait()
         const next = (await multiSig.connect(owner1).getTotalTransactions()).toNumber();
         expect(next).to.equal(prev + 1);
       });
@@ -257,6 +258,55 @@ describe("Multisig", function () {
         await executeTxn.wait()
         await expect(multiSig.connect(deployer).execute(0)).to.revertedWith("Transaction has been executed");
       });
+    })
+
+    describe("Events", () => {
+      it("Should emit Submit Event", async () => {
+        const { multiSig, owner1, notOwner1 } = await loadFixture(deployMultiSigWallet);
+        const _to = notOwner1.address;
+        const _value = utils.parseEther("0.5").toString();
+        const _data = "0x00";
+        const txIndex = await multiSig.connect(owner1).getTotalTransactions()
+        await expect(multiSig.connect(owner1).submit(_to, _value, _data)).to.emit(multiSig, "Submit").withArgs(owner1.address, txIndex, notOwner1.address, _value, _data);
+      })
+
+      it("Should emit Approve Event", async () => {
+        const { multiSig, owner1, owner2, notOwner1 } = await loadFixture(deployMultiSigWallet);
+        const _to = notOwner1.address;
+        const _value = utils.parseEther("0.5").toString();
+        const _data = "0x00";
+        const txIndex = await multiSig.connect(owner1).getTotalTransactions()
+        await expect(multiSig.connect(owner1).submit(_to, _value, _data)).to.emit(multiSig, "Submit").withArgs(owner1.address, txIndex, notOwner1.address, _value, _data);
+        await expect(multiSig.connect(owner2).approve(0)).to.emit(multiSig, "Approve").withArgs(owner2.address, txIndex)
+      })
+
+      it("Should emit Reject Event", async () => {
+        const { multiSig, owner1, owner2, notOwner1 } = await loadFixture(deployMultiSigWallet);
+        const _to = notOwner1.address;
+        const _value = utils.parseEther("0.5").toString();
+        const _data = "0x00";
+        const txIndex = await multiSig.connect(owner1).getTotalTransactions()
+        await expect(multiSig.connect(owner1).submit(_to, _value, _data)).to.emit(multiSig, "Submit").withArgs(owner1.address, txIndex, notOwner1.address, _value, _data);
+        await expect(multiSig.connect(owner2).reject(0)).to.emit(multiSig, "Reject").withArgs(owner2.address, txIndex)
+      })
+
+      it("Should emit Execute Event", async () => {
+        const { multiSig, owner1, owner2, notOwner1 } = await loadFixture(deployMultiSigWallet);
+        const _to = notOwner1.address;
+        const _value = utils.parseEther("0.5").toString();
+        const _data = "0x00";
+        const txIndex = await multiSig.connect(owner1).getTotalTransactions()
+        await expect(multiSig.connect(owner1).submit(_to, _value, _data)).to.emit(multiSig, "Submit").withArgs(owner1.address, txIndex, notOwner1.address, _value, _data);
+        await expect(multiSig.connect(owner2).approve(0)).to.emit(multiSig, "Approve").withArgs(owner2.address, txIndex)
+        await expect(multiSig.connect(owner1).execute(0)).to.emit(multiSig, "Execute").withArgs(owner1.address, txIndex)
+      })
+
+      it("Should emit Deposit Event", async () => {
+        const { multiSig, owner1 } = await loadFixture(deployMultiSigWallet);
+        const _to = multiSig.address
+        const _value = utils.parseEther("0.5")
+        await expect(owner1.sendTransaction({ to: _to,value: _value})).to.emit(multiSig, "Deposit").withArgs(owner1.address, _value, (await multiSig.getBalance()).add(_value))
+      })
     })
   });
 });
