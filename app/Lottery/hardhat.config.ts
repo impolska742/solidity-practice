@@ -15,7 +15,12 @@ const config: HardhatUserConfig = {
       url: process.env.SEPOLIA_URL,
       accounts: [`${process.env.PRIVATE_KEY}`],
       chainId: 11155111
-    }
+    },
+    goerli: {
+      url: `${process.env.GOERLI_URL}`,
+      accounts: [`${process.env.PRIVATE_KEY}`],
+      chainId: 5,
+    },
   }
 };
 
