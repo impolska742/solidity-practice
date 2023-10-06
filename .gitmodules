@@ -1,9 +1,0 @@
-[submodule "learn-foundry/lib/forge-std"]
-	path = learn-foundry/lib/forge-std
-	url = https://github.com/foundry-rs/forge-std
-[submodule "simple-storage/lib/forge-std"]
-	path = simple-storage/lib/forge-std
-	url = https://github.com/foundry-rs/forge-std
-[submodule "simple-storage/lib/chainlink-brownie-contracts"]
-	path = simple-storage/lib/chainlink-brownie-contracts
-	url = https://github.com/smartcontractkit/chainlink-brownie-contracts
