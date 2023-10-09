@@ -5,28 +5,16 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/Ag
 
 library PriceConverter {
     function getConversionRate(
-        uint256 ethAmount
+        uint256 ethAmount,
+        AggregatorV3Interface priceFeed
     ) internal view returns (uint256) {
-        uint256 ethPrice = getPrice();
+        uint256 ethPrice = getPrice(priceFeed);
         uint256 ethAmountInUsd = (ethAmount * ethPrice) / 1e18;
         return ethAmountInUsd;
     }
-
-    /**
-     * Network: Goerli
-     * Aggregator: ETH/USD
-     * Address: 0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e
-     */
-    function getPrice() internal view returns (uint256) {
-        (, int answer, , , ) = AggregatorV3Interface(
-            0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e
-        ).latestRoundData();
+    
+    function getPrice(AggregatorV3Interface priceFeed) internal view returns (uint256) {
+        (, int answer, , , ) = priceFeed.latestRoundData();
         return uint256(answer * 1e10);
-    }
-
-    function getVersion() internal view returns (uint256) {
-        return
-            AggregatorV3Interface(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e)
-                .version();
     }
 }
