@@ -16,7 +16,7 @@ contract FundMe {
     uint256 public minimumUsd = 5 * 1e18;
     mapping(address => uint256) private addressToAmountFunded;
     address[] private funders;
-    address public owner;
+    address private owner;
     AggregatorV3Interface private priceFeed;
 
     // Modifiers
@@ -101,12 +101,5 @@ contract FundMe {
      */
     function getOwner() public view returns (address) {
         return owner;
-    }
-
-    /**
-     *  @return chainlink pricefeed address
-     */
-    function getPriceFeed() public view returns (AggregatorV3Interface) {
-        return priceFeed;
     }
 }

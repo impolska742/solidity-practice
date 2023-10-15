@@ -16,6 +16,12 @@ contract FundMeTest is Test {
     uint256 constant SEND_FUND = 1 ether;
     uint256 constant STARTING_BALANCE = 10 ether;
 
+    modifier funded() {
+        vm.prank(USER1);
+        fundMe.fund{value: SEND_FUND}();
+        _;
+    }
+
     // What can we do to work with addresses outside our system?
     // 1. Unit
     //    - Testing a specific part of the code
@@ -39,11 +45,6 @@ contract FundMeTest is Test {
     }
 
     // Unit
-    function testOwner() public {
-        assertEq(fundMe.owner(), msg.sender);
-    }
-
-    // Unit
     function testGetOwner() public {
         assertEq(fundMe.getOwner(), msg.sender);
     }
@@ -54,31 +55,37 @@ contract FundMeTest is Test {
     }
 
     // Unit
+    function testGetFunderFailsBeforeFunding() public {
+        vm.expectRevert();
+        fundMe.getFunder(0);
+    }
+
+    // Unit
+    function testGetFunderSucceedsAfterFunding() public funded {
+        assertEq(fundMe.getFunder(0), USER1);
+    }
+
+    // Unit
     function testFundFailsWithoutEnoughEth() public {
         vm.expectRevert();
         fundMe.fund(); // 0 value
     }
 
     // Integration
-    function testFundUpdatesAddressToAmountFundedFundedDataStructure() public {
-        vm.startPrank(USER1);
-
-        fundMe.fund{value: SEND_FUND}();
+    function testFundUpdatesAddressToAmountFundedFundedDataStructure()
+        public
+        funded
+    {
+        vm.prank(USER1);
         uint256 amountFunded = fundMe.getAddressToAmountFunded(USER1);
         assertEq(SEND_FUND, amountFunded);
-
-        vm.stopPrank();
     }
 
     // Integration
-    function testFundUpdatesFundersDataStructure() public {
-        vm.startPrank(USER1);
-
-        fundMe.fund{value: SEND_FUND}();
+    function testFundUpdatesFundersDataStructure() public funded {
+        vm.prank(USER1);
         address funder = fundMe.getFunder(0);
         assertEq(USER1, funder);
-
-        vm.stopPrank();
     }
 
     // Integration
@@ -147,5 +154,107 @@ contract FundMeTest is Test {
         assertEq(SEND_FUND * 2, amountFunded);
 
         vm.stopPrank();
+    }
+
+    // Integration
+    function testWithdrawFail() public funded {
+        vm.prank(USER1);
+        vm.expectRevert();
+        fundMe.withdraw();
+    }
+
+    // Integration
+    function testWithdrawSucceeds() public funded {
+        // Arrange
+        uint256 startingOwnerBalance = fundMe.getOwner().balance;
+        uint256 startingFundMeBalance = address(fundMe).balance;
+
+        // Act
+        vm.prank(fundMe.getOwner());
+        fundMe.withdraw();
+
+        // Assert
+        uint256 endingOwnerBalance = fundMe.getOwner().balance;
+        uint256 endingFundMeBalance = address(fundMe).balance;
+
+        assertEq(endingFundMeBalance, 0);
+        assertEq(
+            endingOwnerBalance,
+            startingOwnerBalance + startingFundMeBalance
+        );
+    }
+
+    // E2E
+    function testAll() public {
+        vm.startPrank(USER1);
+
+        // Check Balance at start
+        assertEq(address(USER1).balance, STARTING_BALANCE);
+        assertEq(address(fundMe).balance, 0);
+
+        // Check amount funded before funding
+        uint256 amountFunded = fundMe.getAddressToAmountFunded(USER1);
+        assertEq(0, amountFunded);
+
+        // Check funders list before funding
+        vm.expectRevert();
+        fundMe.getFunder(0);
+
+        // Fund the contract
+        fundMe.fund{value: SEND_FUND}();
+
+        // Check Balance after funding
+        assertEq(address(USER1).balance, STARTING_BALANCE - SEND_FUND);
+        assertEq(address(fundMe).balance, SEND_FUND);
+
+        // Check funders list after funding got updated
+        address funder = fundMe.getFunder(0);
+        assertEq(USER1, funder);
+
+        // Check address to amount funded
+        amountFunded = fundMe.getAddressToAmountFunded(USER1);
+        assertEq(SEND_FUND, amountFunded);
+
+        // Fund the contract again
+        fundMe.fund{value: SEND_FUND}();
+
+        // Check Balance after funding
+        assertEq(address(USER1).balance, STARTING_BALANCE - (SEND_FUND * 2));
+        assertEq(address(fundMe).balance, SEND_FUND * 2);
+
+        // Check funders list after funding got updated twice
+        funder = fundMe.getFunder(1);
+        assertEq(USER1, funder);
+
+        // Check address to amount funded
+        amountFunded = fundMe.getAddressToAmountFunded(USER1);
+        assertEq(SEND_FUND * 2, amountFunded);
+
+        vm.stopPrank();
+
+        // Test balance before withdraw
+        uint256 startingOwnerBalance = fundMe.getOwner().balance;
+        uint256 startingFundMeBalance = address(fundMe).balance;
+
+        // Withdraw
+        vm.prank(fundMe.getOwner());
+        fundMe.withdraw();
+
+        uint256 endingOwnerBalance = fundMe.getOwner().balance;
+        uint256 endingFundMeBalance = address(fundMe).balance;
+        uint256 amountFundedAfterWithdraw = fundMe.getAddressToAmountFunded(
+            USER1
+        );
+
+        vm.expectRevert();
+        fundMe.getFunder(0);
+
+        // Test balance after withdraw
+        assertEq(endingFundMeBalance, 0);
+        assertEq(
+            endingOwnerBalance,
+            startingOwnerBalance + startingFundMeBalance
+        );
+        assertEq(amountFundedAfterWithdraw, 0);
     }
 }
