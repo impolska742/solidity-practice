@@ -55,7 +55,11 @@ contract FundMe {
     }
 
     function withdraw() public onlyOwner {
-        for (uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++) {
+        for (
+            uint256 funderIndex = 0;
+            funderIndex < funders.length;
+            funderIndex++
+        ) {
             address funder = funders[funderIndex];
             addressToAmountFunded[funder] = 0;
         }
@@ -72,7 +76,9 @@ contract FundMe {
      *  @param funder the address of the funder
      *  @return the amount funded
      */
-    function getAddressToAmountFunded(address funder) public view returns (uint256) {
+    function getAddressToAmountFunded(
+        address funder
+    ) public view returns (uint256) {
         return addressToAmountFunded[funder];
     }
 
@@ -83,14 +89,23 @@ contract FundMe {
         return priceFeed.version();
     }
 
+    /**
+     *  @return the person who funded
+     */
     function getFunder(uint256 index) public view returns (address) {
         return funders[index];
     }
 
+    /**
+     *  @return owner of the contract
+     */
     function getOwner() public view returns (address) {
         return owner;
     }
 
+    /**
+     *  @return chainlink pricefeed address
+     */
     function getPriceFeed() public view returns (AggregatorV3Interface) {
         return priceFeed;
     }
