@@ -14,8 +14,8 @@ contract FundMe {
     using PriceConverter for uint256;
 
     uint256 public minimumUsd = 5 * 1e18;
-    mapping(address => uint256) public addressToAmountFunded;
-    address[] public funders;
+    mapping(address => uint256) private addressToAmountFunded;
+    address[] private funders;
     address public owner;
     AggregatorV3Interface private priceFeed;
 
