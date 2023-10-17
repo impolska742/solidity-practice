@@ -79,7 +79,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
         bytes32 gasLane,
         uint64 subscriptionId,
         uint32 callbackGasLimit
-    ) payable VRFConsumerBaseV2(vrfCoordinator) {
+    ) VRFConsumerBaseV2(vrfCoordinator) {
         i_entranceFee = entranceFee;
         i_duration = duration;
         i_gasLane = gasLane;
@@ -90,8 +90,6 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
         s_lastTimestamp = block.timestamp;
         s_raffleState = RaffleState.OPEN;
     }
-
-    receive() external payable {}
 
     function enterRaffle() external payable {
         if (msg.value < i_entranceFee) {
@@ -201,5 +199,17 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
 
     function getDuration() external view returns (uint256) {
         return i_duration;
+    }
+
+    function getNumberOfPlayers() external view returns (uint256) {
+        return s_players.length;
+    }
+
+    function getRecentWinner() external view returns (address) {
+        return s_recentWinner;
+    }
+
+    function getLastTimeStamp() external view returns (uint256) {
+        return s_lastTimestamp;
     }
 }
