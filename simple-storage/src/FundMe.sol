@@ -71,6 +71,24 @@ contract FundMe {
         // require(success);
     }
 
+    function cheaperWithdraw() public onlyOwner {
+        uint256 fundersLength = funders.length;
+        for (
+            uint256 funderIndex = 0;
+            funderIndex < fundersLength;
+            funderIndex++
+        ) {
+            address funder = funders[funderIndex];
+            addressToAmountFunded[funder] = 0;
+        }
+        funders = new address[](0);
+
+        // Transfer vs call vs Send
+        payable(msg.sender).transfer(address(this).balance);
+        // (bool success,) = owner.call{value: address(this).balance}("");
+        // require(success);
+    }
+
     /**
      * @notice Gets the amount that an address has funded
      *  @param funder the address of the funder
