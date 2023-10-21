@@ -38,7 +38,6 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
     /** Errors */
     error Raffle__InsufficientEthSent();
     error Raffle__RaffleIsNotOpen();
-    error Raffle__NotEnoughTime();
     error Raffle__PrizeTransferFailed();
     error Raffle__UpkeepNotNeeded(
         uint256 currentBalance,
@@ -70,7 +69,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
     /** Events */
     event Raffle__EnteredRaffle(address indexed player);
     event Raffle__PickedWinner(address indexed winner);
-    event Raffle__RequestedRaffleWinner(uint256 winner);
+    event Raffle__RequestedRaffleWinner(uint256 indexed requestId);
 
     constructor(
         uint256 entranceFee,
@@ -86,7 +85,6 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
         i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinator);
         i_subscriptionId = subscriptionId;
         i_callbackGasLimit = callbackGasLimit;
-
         s_lastTimestamp = block.timestamp;
         s_raffleState = RaffleState.OPEN;
     }
@@ -201,8 +199,28 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
         return i_duration;
     }
 
+    function getSubscriptionId() external view returns (uint64) {
+        return i_subscriptionId;
+    }
+
+    function getCallbackGasLimit() external view returns (uint32) {
+        return i_callbackGasLimit;
+    }
+
+    function getVRFCoordinator() external view returns (VRFCoordinatorV2Interface) {
+        return i_vrfCoordinator;
+    }
+
+    function getGasLane() external view returns (bytes32) {
+        return i_gasLane;
+    }
+
     function getNumberOfPlayers() external view returns (uint256) {
         return s_players.length;
+    }
+
+    function getPlayerAtIndex(uint256 index) external view returns (address) {
+        return s_players[index];
     }
 
     function getRecentWinner() external view returns (address) {
@@ -211,5 +229,9 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
 
     function getLastTimeStamp() external view returns (uint256) {
         return s_lastTimestamp;
+    }
+
+    function getRaffleState() external view returns (RaffleState) {
+        return s_raffleState;
     }
 }
