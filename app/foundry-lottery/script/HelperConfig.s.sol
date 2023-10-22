@@ -14,8 +14,10 @@ contract HelperConfig is Script {
         uint64 subscriptionId;
         uint32 callbackGasLimit;
         address link;
+        uint256 deployerKey;
     }
 
+    uint256 public constant DEFAULT_ANVIL_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
     NetworkConfig public activeNetworkConfig;
 
     constructor() {
@@ -30,7 +32,7 @@ contract HelperConfig is Script {
         }
     }
 
-    function getMainnetConfig() public pure returns (NetworkConfig memory) {
+    function getMainnetConfig() public view returns (NetworkConfig memory) {
         NetworkConfig memory networkConfig = NetworkConfig({
             entranceFee: 0.01 ether,
             duration: 30, // 30 seconds
@@ -38,12 +40,13 @@ contract HelperConfig is Script {
             gasLane: 0x8af398995b04c28e9951adb9721ef74c74f93e6a478f39e7e0777be13527e7ef,
             subscriptionId: 0, // TODO: update with our subscription id with script
             callbackGasLimit: 500_000,
-            link: 0x514910771AF9Ca656af840dff83E8264EcF986CA
+            link: 0x514910771AF9Ca656af840dff83E8264EcF986CA,
+            deployerKey: vm.envUint("PRIVATE_KEY")
         });
         return networkConfig;
     }
 
-    function getGoerliConfig() public pure returns (NetworkConfig memory) {
+    function getGoerliConfig() public view returns (NetworkConfig memory) {
         NetworkConfig memory networkConfig = NetworkConfig({
             entranceFee: 0.01 ether,
             duration: 30, // 30 seconds
@@ -51,12 +54,13 @@ contract HelperConfig is Script {
             gasLane: 0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15,
             subscriptionId: 14975, // TODO: update with our subscription id with script
             callbackGasLimit: 500_000,
-            link: 0x326C977E6efc84E512bB9C30f76E30c160eD06FB
+            link: 0x326C977E6efc84E512bB9C30f76E30c160eD06FB,
+            deployerKey: vm.envUint("PRIVATE_KEY")
         });
         return networkConfig;
     }
 
-    function getSepoliaConfig() public pure returns (NetworkConfig memory) {
+    function getSepoliaConfig() public view returns (NetworkConfig memory) {
         NetworkConfig memory networkConfig = NetworkConfig({
             entranceFee: 0.01 ether,
             duration: 30, // 30 seconds
@@ -64,7 +68,8 @@ contract HelperConfig is Script {
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
             subscriptionId: 6091, 
             callbackGasLimit: 500_000,
-            link: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+            link: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
+            deployerKey: vm.envUint("PRIVATE_KEY")
         });
         return networkConfig;
     }
@@ -90,7 +95,8 @@ contract HelperConfig is Script {
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
             subscriptionId: 0, // TODO: update with our subscription id with script
             callbackGasLimit: 500_000,
-            link: address(link)
+            link: address(link),
+            deployerKey: DEFAULT_ANVIL_KEY
         });
         return networkConfig;
     }
