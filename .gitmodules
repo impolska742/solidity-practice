@@ -13,3 +13,6 @@
 [submodule "app/foundry-lottery/lib/foundry-devops"]
 	path = app/foundry-lottery/lib/foundry-devops
 	url = https://github.com/cyfrin/foundry-devops
+[submodule "app/test/lib/forge-std"]
+	path = app/test/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
