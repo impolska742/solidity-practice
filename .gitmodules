@@ -28,3 +28,6 @@
 [submodule "app/erc721/lib/openzeppelin-contracts"]
 	path = app/erc721/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "app/erc721/lib/foundry-devops"]
+	path = app/erc721/lib/foundry-devops
+	url = https://github.com/Cyfrin/foundry-devops
