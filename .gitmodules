@@ -31,3 +31,6 @@
 [submodule "app/erc721/lib/foundry-devops"]
 	path = app/erc721/lib/foundry-devops
 	url = https://github.com/Cyfrin/foundry-devops
+[submodule "app/stablecoin/lib/forge-std"]
+	path = app/stablecoin/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
