@@ -10,9 +10,9 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  * @author Vaibhav Bhardwaj
  * Collateral: Exogenous (wETH & wBTC)
  * Minting: Algorithmic
- * 
+ *
  * This contract is just an ERC20 implementation for our stable coin. It is meant to be governed by our DSCEngine.
- * 
+ *
  */
 contract DecentralizedStableCoin is ERC20Burnable, Ownable {
     error DecentralizedStableCoin__MustBeMoreThanZero();
@@ -26,7 +26,7 @@ contract DecentralizedStableCoin is ERC20Burnable, Ownable {
     function burn(uint256 _amount) public override onlyOwner {
         uint256 balance = balanceOf(msg.sender);
         if (_amount <= 0) {
-            revert DecentralizedStableCoin__MustBeMoreThanZero(); 
+            revert DecentralizedStableCoin__MustBeMoreThanZero();
         }
         if (_amount > balance) {
             revert DecentralizedStableCoin__BurnAmountExceedsBalance();
