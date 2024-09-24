@@ -117,7 +117,11 @@ contract DSCEngine is ReentrancyGuard {
 
     function burnDSC() external {}
 
-    function mintDSC() external {}
+    // Check if the collateral value is > DSC amount
+    // Price Feeds for value
+    function mintDSC() external {
+
+    }
 
     function liquidate() external {}
 
